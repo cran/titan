@@ -8,7 +8,7 @@
 
 titan <-
 function(
-    data =       hypoxia,
+    data =       NULL,
     trace =      TRUE,
     widget =     TRUE,
     dataFile =   "",
@@ -33,7 +33,7 @@ function(
 )
 {
 
-titan.version <- "TITAN v.1.0-8: Titration Analysis"
+titan.version <- "TITAN v.1.0-9: Titration Analysis"
 
 # Trim call from error report
 trim.error <-
@@ -917,7 +917,7 @@ function( widget, ... )
 # Widget input sequence
 titan.input <-
 function(
-    data =       hypoxia,
+    data =       NULL,
     trace =      TRUE,
     widget =     TRUE,
     dataFile =   "",
@@ -938,8 +938,8 @@ function(
     R =          1000,
     seed =       0,
     ciConf =     .95,
-    ciType =     "all",
-    ... )
+    ciType =     "all"
+)
 {
     get.data <-
     function( opt, data )
@@ -963,7 +963,7 @@ function(
         datCols <- match( 1:7, pmatch( names( dat ), datNames ) )
         if ( any( is.na( datCols[ 1:2 ] ) ) )
         {
-            stop( "MS data does not contain column ", datNames[ is.na( datCols ) ], call. = FALSE )
+            stop( "MS data does not contain column ", paste( datNames[ 1:2 ][ is.na( datCols[ 1:2 ] ) ], collapse = " or " ), call. = FALSE )
         }
         if ( all( is.na( datCols[ 3:4 ] ) ) )
         {
@@ -1211,9 +1211,8 @@ function(
         R =          R,
         seed =       seed,
         ciConf =     ciConf,
-        ciType =     ciType,
-        ...
-        )
+        ciType =     ciType
+    )
     if ( widget )
     {
         widget <- 1
@@ -2204,7 +2203,7 @@ titan.plot <-
 function( input, reg, cf, trace = TRUE, ... )
 {
     titan.plot.internal <-
-    function( input, reg, cf, ... )
+    function( input, reg, cf, cex = 0.8, ok = FALSE, ... )
     {
         for ( gene in cf$gene.valid )
         {
@@ -2214,15 +2213,25 @@ function( input, reg, cf, trace = TRUE, ... )
                 rx.valid = cf$generx.valid[ gene, ],
                 input$opt$freqLo,
                 input$opt$freqHi,
+                cex,
                 ...
             )
+            if ( ok && gene != cf$gene.valid[ length( cf$gene.valid ) ] )
+            {
+                msg <- tkmessageBox(
+                    message = "Review the next gene",
+                    type = "ok",
+                    icon = "info",
+                    title = titan.version
+                )
+            }
         }
     }
 
     if ( input$opt$pdfFile != "" )
     {
-        pdf( file = input$opt$pdfFile, height = 6, width = 6, onefile = TRUE )
-        titan.plot.internal( input, reg, cf, pt.cex = .6, ... )
+        pdf( file = input$opt$pdfFile, height = 6, width = 8, onefile = TRUE )
+        titan.plot.internal( input, reg, cf, cex = 0.8, ok = FALSE, ... )
         dev.off()
     }
     else if ( trace )
@@ -2230,23 +2239,16 @@ function( input, reg, cf, trace = TRUE, ... )
         cols <- ceiling( sqrt( length( cf$gene.valid ) ) )
         rows <- ceiling( length( cf$gene.valid ) / cols )
         par( mfrow = c( rows, cols ) )
-        titan.plot.internal( input, reg, cf, pt.cex = .6 / sqrt( cols ), ... )
+        titan.plot.internal( input, reg, cf, cex = 0.8, ok = TRUE, ... )
     }
 }
 
 titan.plot.gene <-
-function( gene, data, reg, rx.valid, freqLo, freqHi, ... )
+function( gene, data, reg, rx.valid, freqLo, freqHi, cex, ... )
 {
     titan.plot.generx <-
-    function( gene, rx, data, reg, xr, colour, se = TRUE, trace = FALSE, pt.cex = 1 )
+    function( gene, rx, data, reg, xr, colour, se = TRUE, trace = FALSE )
     {
-        errbar <-
-        function( x, y, h, w = 0, ... )
-        {
-            x1 <- c( x-w, x+w, x, x, x - w, x + w )
-            y1 <- c( rep( y + h, 3 ), rep( y - h, 3 ) )
-            lines( x1, y1, ... )
-        }
         len.p <- 2 * dim( data$dat )[ 2 ]
         sel <- ( data$dat$gene == data$levels$gene[ gene ] & data$dat$rx == data$levels$rx[ rx ] )
         x <- data$dat$x[ sel ] - data$generx.mean[ data$dat$generx[ sel ] ]
@@ -2261,7 +2263,7 @@ function( gene, data, reg, rx.valid, freqLo, freqHi, ... )
         newdata$generxi <- data$dat$generxi[ rep( sel1, len.p ), , drop = FALSE ]
         reg.p <- predict( reg, newdata, se.fit = se )
         new.x <- new.x + data$generx.mean[ rep( data$dat$generx[ sel1 ], len.p ) ]
-        lines( new.x, reg.p$fit, col = colour )
+        panel.lines( new.x, reg.p$fit, col = colour )
         if ( inherits( reg, "rlm" ) )
         {
             df.res <- summary( reg )$df[ 2 ]
@@ -2273,10 +2275,11 @@ function( gene, data, reg, rx.valid, freqLo, freqHi, ... )
         k <- qt( .975, df = df.res )
         if ( se )
         {
-            lines( new.x, reg.p$fit + k * reg.p$se.fit, col = colour, lty = 3 )
-            lines( new.x, reg.p$fit - k * reg.p$se.fit, col = colour, lty = 3 )
+            panel.lines( new.x, reg.p$fit + k * reg.p$se.fit, col = colour, lty = 3 )
+            panel.lines( new.x, reg.p$fit - k * reg.p$se.fit, col = colour, lty = 3 )
         }
-        points(
+        p <- c( 4, 97:119, 121:122, 65:87, 88:89 )[ as.numeric( data$dat$sample[sel] ) * ( data$dat$flag[sel] == 0 ) + 1 ]
+        panel.points(
             data$dat$x[ sel ],
             data$dat$y[ sel ],
             col = colour,
@@ -2288,39 +2291,68 @@ function( gene, data, reg, rx.valid, freqLo, freqHi, ... )
     gsel <- ( data$dat$gene == data$levels$gene[ gene ] )
     xr <- range( data$dat$x[ gsel ] )
     yr <- range( data$dat$y[ gsel ][ is.finite( data$dat$y[ gsel ] ) ] )
+    yr <- mean(yr) + diff(yr) * 0.5 * ( 1.04 * c( -1, 1 ) )
     xl <- xr[ 1 ]
     yl <- c( 4, 1 ) %*% yr / 5
-    par( mar = c( 5, 4, 4, 5 ) + .1 )
-    plot( data$dat$x[ gsel ], data$dat$y[ gsel ], xlab = "", ylab = "", col = 0 )
-    title( data$levels$gene[ gene ] )
-    y2ticks <- c( -1, .01, .05, seq( .1, .9, by = .1 ), .95, .99 )
-    y2seq <- y2ticks[
-        ( which.max( y2ticks[ exp10it( yr[ 1 ] ) > y2ticks ] ) + 1 ):
-        ( which.max( y2ticks[ exp10it( yr[ 2 ] ) >= y2ticks ] ) ) ]
-    axis( side = 4, at = log10it( y2seq ), labels = y2seq )
-    mtext( "log10 competitor concentration", side = 1, line = 3, cex = .8 )
-    mtext( "log10 ratio of test to competitor signal", side = 2, line = 3, cex = .8)
-    mtext( "Frequency ( test signal / total signal )", side = 4, line = 3, cex = .8)
-    abline( h = 0, col = 8, lty = 1 )
-    abline( h = log10it( freqLo ), col = 8, lty = 2 )
-    abline( h = log10it( freqHi ), col = 8, lty = 2 )
+    par( mar = c( 5, 4, 4, 5 ) + 0.1 )
     rx.valid <- as.logical( rx.valid )
     cols <- numeric( data$levels$nrx )
     cols[ rx.valid ] <- seq( sum( rx.valid ) )
-    for ( rx in seq( data$levels$nrx )[ rx.valid ] )
-    {
-        titan.plot.generx( gene, rx, data, reg, xr, cols[ rx ], ... )
-    }
     if ( sum( rx.valid ) )
     {
-        legend(
-            x = xl,
-            y = yl,
-            legend = data$levels$rx[ rx.valid ],
-            col = seq( sum( rx.valid ) ),
-            lty = rep( 1, sum( rx.valid ) ),
-            pt.cex = pt.cex
+        t <- paste( "                         ", c( data$levels$rx[ rx.valid ], "flagged spot" ) )
+        plot.new()
+        titan.xyplot <- xyplot(
+            dat$y ~ dat$x,
+            data = data,
+            subset = gsel,
+            xlab = list( "log10 competitor concentration", cex = cex ),
+            ylab = list( "log10 ( test signal / competitor signal )", cex = cex ),
+            ylim = yr,
+            panel = function()
+            {
+                for ( rx in seq( data$levels$nrx )[ rx.valid ] )
+                {
+                    titan.plot.generx( gene, rx, data, reg, xr, cols[ rx ] )
+                }
+                panel.abline( h = 0, col = 8, lty = 1 )
+                panel.abline( h = log10it( freqLo ), col = 8, lty = 2 )
+                panel.abline( h = log10it( freqHi ), col = 8, lty = 2 )
+            },
+            auto.key = TRUE,
+            key = list(
+                text =  list(
+                    t,
+                    cex = cex
+                ),
+                lines = list(
+                    col = c( seq( sum( rx.valid ) ), 1 ),
+                    pch = c( rep( 1, sum( rx.valid ) ), 4 ),
+                    lty = rep( 1, sum( rx.valid ) + 1 ),
+                    type = "o",
+                    size = 3
+                ),
+                space = "right",
+                divide = 1
+            ),
+            main = data$levels$gene[ gene ],
+            scales = list(
+                y = list( col = 0, tck = 0 ),
+                ...
+            )
         )
+        plot( titan.xyplot )
+        trellis.focus( "panel", column = 1, row = 1, clip.off = TRUE, highlight = FALSE )
+        panel.axis( "left", outside = TRUE, check.overlap = TRUE )
+        y2ticks <- c( -1, .01, .05, seq( .1, .9, by = .1 ), .95, .99 )
+        y2seq <- y2ticks[
+            ( which.max( y2ticks[ exp10it( yr[ 1 ] ) > y2ticks ] ) + 1 ):
+            ( which.max( y2ticks[ exp10it( yr[ 2 ] ) >= y2ticks ] ) ) ]
+        xlim <- current.panel.limits()$xlim
+        ylim <- current.panel.limits()$ylim
+        panel.axis( "right", outside = TRUE, at = ( log10it(y2seq) - yr[1] ) / diff(yr) * diff(ylim) + ylim[1], labels = y2seq, check.overlap = TRUE )
+        panel.text( xr[2] + diff(xr) * 0.2, mean(yr), "Frequency = test signal / ( test signal + competitor signal )", cex = cex, srt = -90 )
+        trellis.unfocus()
     }
     return( gsel )
 }
@@ -2348,12 +2380,19 @@ function( input, reg, cf, ... )
             rx.valid = cf$generx.valid[ gene, ],
             input$opt$freqLo,
             input$opt$freqHi,
+            cex = 0.8,
             ...
         )
-        i <- which( gsel )[ identify( input$data$dat$x[ gsel ],
-            input$data$dat$y[ gsel ],
-            labels =c( "X","O" )[ input$data$dat$flag[ gsel ] + 1 ],
-            pos = FALSE, offset = -.3 ) ]
+        trellis.focus( "panel", column = 1, row = 1, clip.off = TRUE, highlight = FALSE )
+        i <- which( gsel )[
+            panel.identify(
+                input$data$dat$x[ gsel ],
+                input$data$dat$y[ gsel ],
+                labels = c( "X","O" )[ input$data$dat$flag[ gsel ] + 1 ],
+                offset = -.3,
+                threshold = 18
+            )
+        ]
         input$data$dat$flag[ i ] <- 1 - input$data$dat$flag[ i ]
     }
     if (
@@ -3326,6 +3365,7 @@ function( x, ... )
     require( "tcltk" )
     require( "splines" )
     require( "boot" )
+    require( "lattice" )
 
     # get data and options from input
     titan.ip <- titan.input(

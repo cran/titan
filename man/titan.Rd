@@ -6,7 +6,7 @@
   }
 \usage{
 titan(
-    data =       hypoxia,
+    data =       NULL,
     trace =      TRUE,
     widget =     TRUE,
     dataFile =   "",
