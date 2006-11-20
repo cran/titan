@@ -1213,7 +1213,7 @@ function(
         ciConf =     ciConf,
         ciType =     ciType
     )
-    if ( widget )
+    if ( widget && interactive() )
     {
         widget <- 1
         repeat
@@ -2216,7 +2216,7 @@ function( input, reg, cf, trace = TRUE, ... )
                 cex,
                 ...
             )
-            if ( ok && gene != cf$gene.valid[ length( cf$gene.valid ) ] )
+            if ( ok && interactive() && gene != cf$gene.valid[ length( cf$gene.valid ) ] )
             {
                 msg <- tkmessageBox(
                     message = "Review the next gene",
@@ -2360,6 +2360,10 @@ function( gene, data, reg, rx.valid, freqLo, freqHi, cex, ... )
 titan.manualFlag <-
 function( input, reg, cf, ... )
 {
+    if ( !interactive() )
+    {
+        return( input$data$dat$flag )
+    }
     ok <- tkmessageBox(
         message = paste(
             "Left click mouse\tto change the flag\n\n",
@@ -3390,8 +3394,7 @@ function( x, ... )
         R,
         seed,
         ciConf,
-        ciType,
-        ...
+        ciType
     )
 
     # record output
@@ -3417,6 +3420,7 @@ function( x, ... )
     # manually flag data points
     while (
         widget &&
+        interactive() &&
         (
             tclvalue
             (

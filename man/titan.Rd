@@ -205,7 +205,7 @@ t3 <- do.call( "titan", opt )
 \references{
   Elvidge, G., Price, T. S., Glenny, L. and Ragoussis, I.
   \emph{Development and evaluation of real-competitive PCR for high-throughput quantitative applications.}
-  Manuscript submitted for pulication.
+  Anal Biochem. 2005;339(2):231-241.
 
   \url{http://www.well.ox.ac.uk/~tprice/titan/userguide.pdf}
 }
