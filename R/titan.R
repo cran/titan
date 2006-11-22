@@ -33,7 +33,7 @@ function(
 )
 {
 
-titan.version <- "TITAN v.1.0-9: Titration Analysis"
+titan.version <- "TITAN v.1.0-13: Titration Analysis"
 
 # Trim call from error report
 trim.error <-
@@ -2152,7 +2152,7 @@ function( input, reg, gene.valid, generx.valid, trace = TRUE )
                 {
                     for ( r in seq( nrx1 ) )
                     {
-                        log10fold.g0[ g, r ] <- ( roots[ gene0[ g ], r + 1 ] - roots[ gene0[ g ], 1 ] )
+                        log10fold.g0[ g, r ] <- ( roots[ gene0[ g ], rx1[ r ] ] - roots[ gene0[ g ], 1 ] )
                     }
                 }
             }
@@ -2160,12 +2160,12 @@ function( input, reg, gene.valid, generx.valid, trace = TRUE )
             {
                 for ( r in seq( nrx1 ) )
                 {
-                    log10fold[ g, r ] <- ( roots[ gene1[ g ], r + 1 ] - roots[ gene1[ g ], 1 ] )
+                    log10fold[ g, r ] <- ( roots[ gene1[ g ], rx1[ r ] ] - roots[ gene1[ g ], 1 ] )
                 }
             }
             if ( ngene0 )
             {
-                log10fold <- log10fold - colMeans( log10fold.g0 )
+                log10fold <- log10fold - matrix( colMeans( log10fold.g0 ), nr = ngene1, nc = nrx1, byrow = TRUE )
             }
         }
     }
@@ -2560,7 +2560,7 @@ function( input, reg, gene.valid, trace = TRUE )
         ##cat( "theta.star =\n", theta.star, "\n" )
         if ( ngene0 )
         {
-            theta.star.g1 <- theta.star.g1 - colMeans( theta.star.g0 )
+            theta.star.g1 <- theta.star.g1 - matrix( colMeans( theta.star.g0 ), nc = nrx1, nr = ngene1, byrow = TRUE )
         }
         return( as.vector( theta.star.g1 ) )
     }
@@ -3351,12 +3351,13 @@ function( x, ... )
 
 
 
-# main program
+# main function
 
 
     # set error message options
-    o <- options()
-    options( warn = 1, error = recover )
+    # [commented out on instructions of B.Ripley]
+    ##o <- options()
+    ##options( warn = 1, error = recover )
 
     if ( trace )
     {
@@ -3466,7 +3467,7 @@ function( x, ... )
     titan.boot.res <- titan.bootstrap( titan.ip, titan.reg, titan.cf$gene.valid, trace )
 
     #restore options
-    options( o )
+    ##options( o )
 
     # return object of class 'titan'
     titan.res <- list(

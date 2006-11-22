@@ -171,13 +171,13 @@ data(hypoxia)
 
 # Analyze titration series using GUI (code not run):
 #
-# t1 <- titan(data = hypoxia)
+# t1 <- titan(data = hypoxia, R=0)
 
 # Perform an identical reanalysis without using GUI:
 #
 # first get previous options
 #
-opt <- list(data = hypoxia)
+opt <- list(data = hypoxia, R=0)
 #
 # adjust the options so that
 # no further data points are flagged
