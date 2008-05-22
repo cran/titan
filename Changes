@@ -1,0 +1,5 @@
+1.0-14:
+  - corrected typo in call to function titan.printreg in function print.titan
+  - defined variable nrx1 in function titan.bootstrap.baselineonly
+  - author emailaddress and website updated
+  - recompiled under R 2.7.0 using Rtools28 from http://www.murdoch-sutherland.com/Rtools/

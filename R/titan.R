@@ -2724,6 +2724,8 @@ function( input, reg, gene.valid, trace = TRUE )
         warning( "Too few test genes with valid data" )
         return( NULL )
     }
+    rx1 <- input$data$levels$rx[ match( input$opt$rx1, input$data$levels$rx ) ]
+    nrx1 <- length( rx1 )
     if ( trace )
     {
         cat( "\n\nRunning bootstrap\n" )
@@ -2962,7 +2964,7 @@ function( input, reg, gene.valid, trace = TRUE )
 print.titan <-
 function( x, ... )
 {
-    titan.print.reg( x$reg )
+    titan.printreg( x$reg )
     titan.print.interpolation( x$interpolation )
     if ( !is.null( x$boot ) )
     {
