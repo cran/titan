@@ -22,7 +22,7 @@ data(hypoxia)
 }
 \author{
   Tom Price
-  \email{tom@spirit.gcrc.upenn.edu}
+  \email{t0mpr1c3@gmail.com}
 }
 \references{
   Elvidge, G., Price, T. S., Glenny, L. and Ragoussis, I.

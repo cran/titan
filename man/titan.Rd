@@ -200,13 +200,13 @@ t3 <- do.call( "titan", opt )
 }
 \author{
   Tom Price
-  \email{tom@spirit.gcrc.upenn.edu}
+  \email{t0mpr1c3@gmail.com}
 }
 \references{
   Elvidge, G., Price, T. S., Glenny, L. and Ragoussis, I.
   \emph{Development and evaluation of real-competitive PCR for high-throughput quantitative applications.}
   Anal Biochem. 2005;339(2):231-241.
 
-  \url{http://www.tomprice.net/titan/userguide.pdf}
+  \url{http://sgdp.iop.kcl.ac.uk/tprice/titan/userguide.pdf}
 }
 \keyword{misc}
